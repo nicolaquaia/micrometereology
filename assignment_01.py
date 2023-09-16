@@ -2,6 +2,48 @@ import numpy as np
 import math as m
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.optimize import minimize
+from scipy.special import gamma
+
+def method1(mean,variance):
+    # Define the moments (mean and variance) of your data
+    #mean = 8.236
+    #variance = 15.272
+
+
+    # Define a function to calculate the moments of the Weibull distribution
+    def weibull_moments(params):
+        k, lambd = params
+        mu = lambd * gamma(1 + 1/k)
+        m2 = (lambd**2 * gamma(1 + 2/k)) - mu**2
+        return np.array([mu, m2])
+
+    #Define a function to calculate the difference between observed and estimated moments
+    def moment_error(params):
+        observed_moments = np.array([mean, variance])# + mean**2])
+        estimated_moments = weibull_moments(params)
+        return np.sum((observed_moments - estimated_moments)**2)
+
+
+    # Initial guesses for k and lambd
+    initial_guess = [1.0, 1.0]
+
+    # Minimize the error function to estimate parameters
+    result = minimize(moment_error, initial_guess, method='Nelder-Mead')
+
+    # Extract estimated parameters
+    estimated_k, estimated_lambda = result.x
+
+    # Print the estimated parameters
+    print("Estimated k:", estimated_k)
+    print("Estimated lambda:", estimated_lambda)
+    mu = estimated_lambda * gamma(1 + 1/estimated_k)
+    m2 = (estimated_lambda**2 * gamma(1 + 2/estimated_k)) - mu**2
+    print(mu)
+    print(m2)
+    return([estimated_k,estimated_lambda])
+
+
 
 
 # Hovsore data set
@@ -40,27 +82,25 @@ plt.legend()
 
 # sprog
 sprog = pd.read_csv('sprog.tsv', delimiter='\t', header=None)
-# columns: time | wind speed 70 | direct 67.5 | direct 70
+speed70 = sprog[1]
+direct65 = sprog[2]
+speed70_mean = np.mean(speed70)    #= mu
+speed70_std = np.std(speed70)      #= sigma
+speed70_var = np.var(speed70)
+#print(speed70_mean, speed70_std)
 
-speed70 = sprog[1]  # 23249 of 99.99
-direct67 = sprog[2]
-direct70 = sprog[3]
 
-speed_list = []
-direct_list = []
+counter = 0
+for i in direct65:
+    if i == 999:
+        counter = counter + 1
+#print(counter)
 
-#for i in range(len(speed70)):
-for i in range(len(speed70)):
-    if speed70[i] < 90:
-        speed_list.append(speed70[i])
-        if direct70[i] < 900:
-            direct_list.append(direct70[i])
-        elif direct67[i] < 900:
-            direct_list.append(direct67[i])
-        else:
-            direct_list.append(0)
 
-speed_list_mean = np.mean(speed_list)       #= mu
-speed_list_std = np.std(speed_list)
-print(speed_list_mean)                      # 8.235566499680502
-print(speed_list_std)                       # 3.907911767517807
+est_k,est_lambda = method1(speed70_mean, speed70_var) #the invalids haven't been filtered out
+print(speed70_mean, speed70_var)
+print("##########################################################")
+est_k,est_lambda = method1(8.236,15.272)
+
+#mean = 8.236
+#variance = 15.272
