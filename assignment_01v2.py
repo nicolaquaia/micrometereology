@@ -8,24 +8,28 @@ from scipy.special import gamma
 
 
 def plot_CDF(array_data, color, label):
+    # plots the CDF given an array of data
     sorted_data_x = np.sort(array_data)
     cumulative_data = np.cumsum(sorted_data_x) / np.sum(sorted_data_x)
     plt.plot(sorted_data_x, cumulative_data, color=color, label=label)
 
 def plot_Gaussian(array_data, mu, sig, color, label):
+    # computes the gaussian distribution given mu and sig and plots it in the range of the data to avoid zeros
     x = np.linspace(min(array_data), max(array_data), num=100)
     y = 1/(sig*np.sqrt(2*np.pi)) * np.exp(-1/2*((x-mu)/sig)**2)
     plt.plot(x, y, color=color, label=label)
 
 
 def plot_histogram(array_data, color, label):
+    # plots the histogram of an array of data
     x = np.linspace(min(array_data), max(array_data), num=100)
     y = np.histogram(array_data, bins=100, density=True)
     width_bar = (max(array_data) - min(array_data)) / 100 + 0.1
     plt.bar(x, y[0], width=width_bar, align='center', color=color, label=label)
 
 def plot_Weibull(array_data, k, lam, color, label):
-    x = np.linspace(min(array_data), max(array_data), num=100)
+    # computes the Weibull distribution given k and lamda and plots it in the range of the data to avoid zeros
+    x = np.linspace(0.001, max(array_data), num=100)
     y = k/x * (x / lam)**k * np.exp(-(x/lam)**k)
     plt.plot(x, y, color=color, label=label)
 
@@ -64,13 +68,30 @@ def method1(mean,variance):
     return([estimated_k,estimated_lambda])
 
 
+def divide_in_sector(data_matrix):
+    # takes a list with entries [velocity, direction] and spits out a list of velocities divided in 12 sectors
+    data_sorted = sorted(data_matrix, key=lambda x: x[1])
+    data_sectors = [[],[],[],[],[],[],[],[],[],[],[],[]]
+    for j in range(1, len(data_sectors)):
+        for i in range(len(data_sorted)):
+            low = (j - 1) * 30 + 15
+            high = (j) * 30 + 15
+            value = data_sorted[i][1]
+            if low <= value < high:
+                data_sectors[j].append(data_sorted[i][0])
+    for i in range(len(data_sorted)):
+        value = data_sorted[i][1]
+        if value < 15 or value >= 345:
+            data_sectors[0].append(data_sorted[i][0])
+    return data_sectors
+
 
 
 # Hovsore data set
 
-hov = pd.read_csv('hovsore_1.txt', delimiter=',',header=None)
-hov_mean = np.mean(hov[1])    #= mu
-hov_std = np.std(hov[1])      #= sigma
+#hov = pd.read_csv('hovsore_1.txt', delimiter=',',header=None)
+#hov_mean = np.mean(hov[1])    #= mu
+#hov_std = np.std(hov[1])      #= sigma
 #print(hov_mean, hov_std)
 
 #plot_Gaussian(hov[1], hov_mean, hov_std, 'r', 'Gaussian')
@@ -97,31 +118,29 @@ with open("sprog.tsv") as file:
             elif float(line[3]) < 900:
                 sprog_data.append([float(line[1]), float(line[3])])
 
-sprog_mean = np.mean(sprog_data, axis=0)
-sprog_var = np.var(sprog_data, axis=0)
+sprog_mean = np.mean(sprog_data, axis=0)    # 8.224218093841214
+sprog_var = np.var(sprog_data, axis=0)      # 15.241837914881087
 
-#print(sprog_mean[0])                        # 8.224218093841214
-#print(sprog_var[0])                         # 15.241837914881087
-
-sprog_velocity = [row[0] for row in sprog_data]
-#sprog_velocity_array = np.array(sprog_velocity)
-
-
-#counter = 0
-#for i in range(len(sprog_velocity)):
-#    if sprog_velocity[i] < 0.4:
-#        counter = counter + 1
-#print(counter)
-#print(counter/len(sprog_velocity)*100)
-
+#print(sprog_mean[0])
+#print(sprog_var[0])
 
 #plot_CDF(sprog_velocity, 'r', label='sprog')
 
-plot_histogram(sprog_velocity, 'r', 'histrogram')
+#plot_histogram(sprog_velocity, 'r', 'histrogram')
 
-est_k, est_lambda = method1(sprog_mean[0],sprog_var[0])
-plot_Weibull(sprog_velocity, est_k, est_lambda, 'b', 'theoretical')
+#est_k, est_lambda = method1(sprog_mean[0],sprog_var[0])
 
+#plot_Weibull(sprog_velocity, est_k, est_lambda, 'b', 'theoretical')
+
+sprog_sectors = divide_in_sector(sprog_data)
+
+# for sector zero
+sector_mean = np.mean(sprog_sectors[0])
+sector_var = np.var(sprog_sectors[0])
+est_k, est_lambda = method1(sector_mean, sector_var)
+
+plot_Weibull(sprog_sectors[0], est_k, est_lambda, 'b', 'theoretical_zero')
+plot_histogram(sprog_sectors[0], 'r', 'histrogram')
 
 
 plt.legend()
