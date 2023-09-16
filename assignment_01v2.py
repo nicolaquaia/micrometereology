@@ -24,8 +24,15 @@ def plot_histogram(array_data, color, label):
     width_bar = (max(array_data) - min(array_data)) / 100 + 0.1
     plt.bar(x, y[0], width=width_bar, align='center', color=color, label=label)
 
+def plot_Weibull(array_data, k, lam, color, label):
+    x = np.linspace(min(array_data), max(array_data), num=100)
+    y = k/x * (x / lam)**k * np.exp(-(x/lam)**k)
+    plt.plot(x, y, color=color, label=label)
+
 def method1(mean,variance):
     # Define the moments (mean and variance) of your data
+    #mean = 8.236
+    #variance = 15.272
 
     # Define a function to calculate the moments of the Weibull distribution
     def weibull_moments(params):
@@ -96,7 +103,7 @@ sprog_var = np.var(sprog_data, axis=0)
 #print(sprog_mean[0])                        # 8.224218093841214
 #print(sprog_var[0])                         # 15.241837914881087
 
-#sprog_velocity = [row[0] for row in sprog_data]
+sprog_velocity = [row[0] for row in sprog_data]
 #sprog_velocity_array = np.array(sprog_velocity)
 
 
@@ -109,11 +116,13 @@ sprog_var = np.var(sprog_data, axis=0)
 
 
 #plot_CDF(sprog_velocity, 'r', label='sprog')
-#plot_histogram(sprog_velocity, 'b', 'histrogram')
+
+plot_histogram(sprog_velocity, 'r', 'histrogram')
+
+est_k, est_lambda = method1(sprog_mean[0],sprog_var[0])
+plot_Weibull(sprog_velocity, est_k, est_lambda, 'b', 'theoretical')
+
+
 
 plt.legend()
 plt.show()
-
-est_k,est_lambda = method1(sprog_mean[0],sprog_var[0])
-print(est_k)
-print(est_lambda)
