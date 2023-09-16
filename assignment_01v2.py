@@ -26,8 +26,6 @@ def plot_histogram(array_data, color, label):
 
 def method1(mean,variance):
     # Define the moments (mean and variance) of your data
-    #mean = 8.236
-    #variance = 15.272
 
     # Define a function to calculate the moments of the Weibull distribution
     def weibull_moments(params):
