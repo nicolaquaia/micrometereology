@@ -1,4 +1,4 @@
-### README: Micrometeorology Reports  
+# Micrometeorology Reports  
 **Developed for DTU Course 46100: Introduction to Micrometeorology for Wind Energy (Autumn 2023)**  
 
 This repository contains reports and accompanying code for four assignments completed during the course. Each assignment delves into critical micrometeorological concepts and methods applied to wind energy. Below is a summary of the topics covered in each assignment:  
